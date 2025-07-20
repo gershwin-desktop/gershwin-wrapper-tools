@@ -1,5 +1,12 @@
 # gershwin-wrapper-tools
 
+This now requires the following packages
+
+```
+libdispatch
+wmctrl-fork
+```
+
 ### Generate new wrappers
 
 ```bash
