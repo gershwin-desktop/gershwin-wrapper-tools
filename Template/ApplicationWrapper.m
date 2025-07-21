@@ -305,12 +305,13 @@ static const NSTimeInterval kWindowListCacheTimeout = 1.0;
 
 - (BOOL)isApplicationCurrentlyRunning 
 {
-    for (NSNumber *pidNumber in [self.trackedPIDs copy]) {
-        pid_t pid = [pidNumber intValue];
-        if (kill(pid, 0) == 0) {
+    // Track only the primary launched process for better user experience
+    // This prevents background services from keeping the wrapper alive
+    if (primaryLaunchedPID > 0) {
+        if (kill(primaryLaunchedPID, 0) == 0) {
             return YES;
         } else {
-            [self untrackPID:pid];
+            [self untrackPID:primaryLaunchedPID];
         }
     }
     return NO;
