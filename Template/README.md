@@ -44,5 +44,8 @@ Uses NSConnection distributed objects instead of fragile PID files:
 
 ### Operating System
 - **GhostBSD** (Gesrhwin community edition)
-- **libdispatch**
 - **wmctrl-fork**
+
+## Known issues
+
+It is important to specify the real binary for an application.  Do not use any shell wrappers or this will not work.  For example code-oss would be /usr/local/share/code-oss/code-oss.  If in doubt check the binary first with cat.
