@@ -43,7 +43,12 @@ Uses NSConnection distributed objects instead of fragile PID files:
 
 ### Operating System
 - **GhostBSD** (Gesrhwin community edition)
-- **wmctrl-fork**
+
+The following should be run to install additional packages needed for this:
+```
+sudo pkg install -g 'GhostBSD*-dev'
+sudo pkg install gershwin-developer
+```
 
 ## Known issues
 
