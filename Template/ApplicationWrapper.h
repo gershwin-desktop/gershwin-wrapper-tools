@@ -1,7 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <sys/event.h>
-#import <dispatch/dispatch.h>
 
 @protocol ApplicationWrapperProtocol
 - (void)activateIgnoringOtherApps:(BOOL)flag;
@@ -23,8 +22,9 @@
     pid_t applicationPID;
     BOOL terminationInProgress;
     
-    dispatch_source_t procMonitorSource;
-    dispatch_queue_t monitorQueue;
+    // Removed GCD components:
+    // dispatch_source_t procMonitorSource;
+    // dispatch_queue_t monitorQueue;
     
     int kqueueFD;
     NSThread *kqueueThread;
@@ -82,8 +82,9 @@
 - (void)applicationProcessExited:(int)exitStatus;
 - (void)initiateWrapperTermination;
 
-- (void)setupGCDProcessMonitoring:(pid_t)pid;
-- (void)cleanupGCDMonitoring;
+// Removed GCD methods:
+// - (void)setupGCDProcessMonitoring:(pid_t)pid;
+// - (void)cleanupGCDMonitoring;
 
 - (void)setupKqueueChildTracking:(pid_t)parentPID;
 - (void)kqueueMonitoringThread:(id)arg;

@@ -12,7 +12,7 @@ Traditional application wrappers suffer from several critical limitations:
 
 This event-driven wrapper solves these problems by:
 
-- **Zero polling**: Uses FreeBSD kernel events (kqueue) and GCD for instant process state changes
+- **Zero polling**: Uses FreeBSD kernel events (kqueue) for instant process state changes
 - **Immediate response**: Sub-millisecond termination detection
 - **Zero idle CPU**: Completely passive monitoring when Firefox is running
 - **Full integration**: Native Workspace support with proper application lifecycle events
@@ -24,8 +24,7 @@ This event-driven wrapper solves these problems by:
 The wrapper employs a sophisticated three-tier monitoring system:
 
 1. **Primary**: NSTask termination notifications - immediate detection when Firefox exits
-2. **Secondary**: GCD DISPATCH_SOURCE_TYPE_PROC monitoring - kernel-level process events  
-3. **Tertiary**: kqueue child process tracking - FreeBSD native event system
+2. **Secondary**: kqueue child process tracking - FreeBSD native event system
 
 ### Single Instance Management
 
@@ -44,5 +43,18 @@ Uses NSConnection distributed objects instead of fragile PID files:
 
 ### Operating System
 - **GhostBSD** (Gesrhwin community edition)
-- **libdispatch**
-- **wmctrl-fork**
+
+The following should be run to install additional packages needed for this:
+```
+sudo pkg install -g 'GhostBSD*-dev'
+sudo pkg install gershwin-developer
+```
+
+## Known issues
+
+It is important to specify the real binary for an application.  Do not use any shell wrappers or this will not work.  For example code-oss would be /usr/local/share/code-oss/code-oss.  If in doubt check the binary first with cat.
+
+List of applications not working properly yet:
+
+* Telegram (Sometimes can no longer be activated when active)
+* VirtualBox (Minimize Virtual machines and activate can cause lockups)

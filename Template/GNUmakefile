@@ -8,7 +8,8 @@ $(APP_NAME)_OBJC_FILES = \
 
 $(APP_NAME)_LDFLAGS += -L/usr/local/lib
 $(APP_NAME)_CPPFLAGS += -I/usr/local/include
-$(APP_NAME)_LDFLAGS += -ldispatch
+# Removed libdispatch linking:
+# $(APP_NAME)_LDFLAGS += -ldispatch
 $(APP_NAME)_OBJCFLAGS += -Wall -Wextra -O2 -fno-strict-aliasing
 
 $(APP_NAME)_OBJCFLAGS += -DAPPLICATION_NAME='"$(APP_NAME)"'

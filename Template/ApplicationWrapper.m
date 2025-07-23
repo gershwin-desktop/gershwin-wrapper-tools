@@ -40,8 +40,9 @@ static const NSTimeInterval kWindowListCacheTimeout = 1.0;
         applicationPID = 0;
         terminationInProgress = NO;
         
-        procMonitorSource = NULL;
-        monitorQueue = dispatch_queue_create("application.monitor", DISPATCH_QUEUE_SERIAL);
+        // Removed GCD initialization:
+        // procMonitorSource = NULL;
+        // monitorQueue = dispatch_queue_create("application.monitor", DISPATCH_QUEUE_SERIAL);
         
         kqueueFD = -1;
         kqueueThread = nil;
@@ -325,7 +326,8 @@ static const NSTimeInterval kWindowListCacheTimeout = 1.0;
     
     [self setupKqueueChildTracking:applicationPID];
     
-    [self setupGCDProcessMonitoring:applicationPID];
+    // Removed GCD setup call:
+    // [self setupGCDProcessMonitoring:applicationPID];
     
     [self performSelector:@selector(checkApplicationStatus) withObject:nil afterDelay:2.0];
 }
@@ -334,7 +336,8 @@ static const NSTimeInterval kWindowListCacheTimeout = 1.0;
 {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(checkApplicationStatus) object:nil];
     
-    [self cleanupGCDMonitoring];
+    // Removed GCD cleanup call:
+    // [self cleanupGCDMonitoring];
     
     [self stopKqueueMonitoring];
 }
@@ -349,9 +352,10 @@ static const NSTimeInterval kWindowListCacheTimeout = 1.0;
         if ([NSThread isMainThread]) {
             [self initiateWrapperTermination];
         } else {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self initiateWrapperTermination];
-            });
+            // Instead of dispatch_async, use performSelectorOnMainThread
+            [self performSelectorOnMainThread:@selector(initiateWrapperTermination)
+                                   withObject:nil
+                                waitUntilDone:NO];
         }
     } else {
         [self performSelector:@selector(checkApplicationStatus) withObject:nil afterDelay:1.0];
@@ -385,16 +389,15 @@ static const NSTimeInterval kWindowListCacheTimeout = 1.0;
     [self stopEventDrivenMonitoring];
     
     if (![NSThread isMainThread]) {
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            [NSApp terminate:self];
-        });
+        [self performSelectorOnMainThread:@selector(terminate:)
+                               withObject:NSApp
+                            waitUntilDone:YES];
     } else {
         [NSApp terminate:self];
     }
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 2.0 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        exit(0);
-    });
+    // Instead of dispatch_after, use performSelector:withObject:afterDelay:
+    [self performSelector:@selector(emergencyExit) withObject:nil afterDelay:2.0];
 }
 
 - (void)emergencyExit
@@ -402,45 +405,9 @@ static const NSTimeInterval kWindowListCacheTimeout = 1.0;
     exit(0);
 }
 
-- (void)setupGCDProcessMonitoring:(pid_t)pid
-{
-    if (procMonitorSource) {
-        dispatch_source_cancel(procMonitorSource);
-        procMonitorSource = NULL;
-    }
-    
-    procMonitorSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_PROC, pid,
-                                              DISPATCH_PROC_EXIT, monitorQueue);
-    
-    if (!procMonitorSource) {
-        return;
-    }
-    
-    dispatch_source_set_event_handler(procMonitorSource, ^{
-        uint32_t flags = dispatch_source_get_data(procMonitorSource);
-        
-        if (flags & DISPATCH_PROC_EXIT) {
-            [self untrackPID:pid];
-            if (![self isApplicationCurrentlyRunning]) {
-                [self applicationProcessExited:0];
-            }
-        }
-    });
-    
-    dispatch_source_set_cancel_handler(procMonitorSource, ^{
-        procMonitorSource = NULL;
-    });
-    
-    dispatch_resume(procMonitorSource);
-}
-
-- (void)cleanupGCDMonitoring
-{
-    if (procMonitorSource) {
-        dispatch_source_cancel(procMonitorSource);
-        procMonitorSource = NULL;
-    }
-}
+// Removed GCD methods entirely:
+// - (void)setupGCDProcessMonitoring:(pid_t)pid
+// - (void)cleanupGCDMonitoring
 
 - (void)setupKqueueChildTracking:(pid_t)parentPID
 {
@@ -533,10 +500,8 @@ static const NSTimeInterval kWindowListCacheTimeout = 1.0;
     isTransformingProcess = YES;
     [self updateDockIconState:YES];
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), 
-                   dispatch_get_main_queue(), ^{
-        [self completeTransformationProcess];
-    });
+    // Instead of dispatch_after, use performSelector:withObject:afterDelay:
+    [self performSelector:@selector(completeTransformationProcess) withObject:nil afterDelay:0.1];
 }
 
 - (void)updateDockIconState:(BOOL)visible
@@ -704,10 +669,8 @@ static const NSTimeInterval kWindowListCacheTimeout = 1.0;
         [self startEventDrivenMonitoring:applicationPID];
     }
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC), 
-                   dispatch_get_main_queue(), ^{
-        [self ensureDockIconVisible];
-    });
+    // Instead of dispatch_after, use performSelector:withObject:afterDelay:
+    [self performSelector:@selector(ensureDockIconVisible) withObject:nil afterDelay:1.0];
 }
 
 - (void)activateIgnoringOtherApps:(BOOL)flag
@@ -962,9 +925,10 @@ static const NSTimeInterval kWindowListCacheTimeout = 1.0;
         [applicationTask release];
     }
     
-    if (monitorQueue) {
-        dispatch_release(monitorQueue);
-    }
+    // Removed dispatch_release call:
+    // if (monitorQueue) {
+    //     dispatch_release(monitorQueue);
+    // }
     
     [super dealloc];
 }
