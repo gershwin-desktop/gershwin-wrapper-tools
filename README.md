@@ -27,7 +27,7 @@ It is important to specify the real binary for an application.  Do not use any s
 ### Install the wrappers in /Applications
 
 ```
-cd code-oss
+cd code-app
 gmake
 sudo gmake install
 ```
